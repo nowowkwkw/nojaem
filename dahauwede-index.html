@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>다하우되 | 혀어어어엉을 재미없다 생각하는 사람들의 모임</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#100d18;--panel:#1c1728;--panel2:#251e35;--line:#403451;--ink:#f5efff;--muted:#b9adc9;--pink:#e9a6d1;--purple:#bba6ff;--danger:#ff9aab;--green:#9bd9b4}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#30203f 0,#100d18 55%);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;min-height:100vh}
+header{padding:30px 18px 22px;text-align:center;border-bottom:1px solid var(--line)}.mark{font-size:12px;letter-spacing:.22em;color:var(--pink)}h1{font-size:clamp(24px,6vw,38px);margin:12px 0 8px;line-height:1.25}.sub{color:var(--muted);font-size:14px}
+main{max-width:850px;margin:22px auto;padding:0 14px 60px}.panel{background:#1c1728eF;border:1px solid var(--line);border-radius:18px;padding:18px;margin:14px 0;box-shadow:0 12px 35px #0003}
+h2{font-size:19px;margin:0 0 14px;color:var(--pink)}h3{font-size:16px;margin:0 0 8px}
+input,textarea,select{width:100%;background:#110e19;color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;margin:6px 0 12px;font:inherit}textarea{min-height:130px;resize:vertical}button{background:var(--purple);color:#1a1424;border:0;border-radius:10px;padding:11px 15px;font-weight:700;margin:4px 5px 4px 0;cursor:pointer}button.secondary{background:#342b47;color:var(--ink);border:1px solid var(--line)}button.danger{background:#592d43;color:#ffe8ef}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.muted{color:var(--muted);font-size:13px}.hidden{display:none!important}.tabs{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}.tabs button.active{background:var(--pink)}.post{padding:14px 0;border-top:1px solid var(--line)}.post:first-child{border-top:0}.meta{font-size:12px;color:var(--muted);margin:5px 0 10px}.content{white-space:pre-wrap;line-height:1.65;overflow-wrap:anywhere}.notice{padding:12px;border-radius:10px;background:#30263d;color:#eadcf8;margin:10px 0}.good{color:var(--green)}.bad{color:var(--danger)}a{color:var(--pink)}footer{text-align:center;color:var(--muted);font-size:12px;padding:24px}
+</style>
+</head>
+<body>
+<header><div class="mark">DAHAUWEDE COMMUNITY</div><h1>다하우되</h1><div class="sub">혀어어어엉을 재미없다 생각하는 사람들의 모임</div></header>
+<main>
+<section id="setup" class="panel">
+<h2>처음 한 번만 연결해 주세요</h2>
+<p class="muted">Supabase 프로젝트 주소와 Publishable key를 입력하면 이 브라우저에서 연결됩니다. 키는 이 사이트에 저장되며 GitHub 파일에는 들어가지 않습니다.</p>
+<label>Project URL</label><input id="url" placeholder="https://xxxxxxxx.supabase.co" autocomplete="url">
+<label>Publishable key</label><input id="key" placeholder="sb_publishable_..." autocomplete="off">
+<div class="row"><button id="connect">연결하기</button><button id="forget" class="secondary">저장된 연결 지우기</button></div><p id="setupMsg" class="muted"></p>
+</section>
+<section id="auth" class="panel hidden">
+<h2>모임 입장</h2><div class="tabs"><button class="active" data-auth="login">로그인</button><button class="secondary" data-auth="signup">회원가입</button></div>
+<div id="loginForm"><input id="loginEmail" type="email" placeholder="이메일"><input id="loginPass" type="password" placeholder="비밀번호"><button id="loginBtn">로그인</button></div>
+<div id="signupForm" class="hidden"><input id="signName" placeholder="닉네임"><input id="signEmail" type="email" placeholder="이메일"><input id="signPass" type="password" placeholder="비밀번호 (6자 이상)"><button id="signupBtn">가입 신청</button></div><p id="authMsg" class="muted"></p>
+</section>
+<section id="pending" class="panel hidden"><h2>가입 승인 대기 중</h2><p>가입 신청이 접수됐어! 관리자가 승인하면 게시판을 이용할 수 있어.</p><button id="logoutPending" class="secondary">로그아웃</button></section>
+<section id="app" class="hidden">
+<div class="panel"><div class="row" style="justify-content:space-between"><div><h2 style="margin-bottom:4px">모임 게시판</h2><div id="welcome" class="muted"></div></div><button id="logout" class="secondary">로그아웃</button></div>
+<div id="adminArea" class="hidden notice"><b>관리자 메뉴</b><p class="muted">가입 신청자 승인/거절</p><div id="requests"></div></div>
+<div class="tabs" id="categories"><button class="active" data-cat="전체">전체</button><button class="secondary" data-cat="잡담">잡담</button><button class="secondary" data-cat="작품 이야기">작품 이야기</button><button class="secondary" data-cat="질문">질문</button><button class="secondary" data-cat="공지">공지</button></div>
+<div class="panel" style="background:var(--panel2)"><h3>새 글 쓰기</h3><select id="postCat"><option>잡담</option><option>작품 이야기</option><option>질문</option><option>공지</option></select><input id="postTitle" placeholder="제목"><textarea id="postBody" placeholder="하고 싶은 이야기를 적어줘."></textarea><button id="postBtn">게시하기</button><span id="postMsg" class="muted"></span></div>
+<div id="posts" class="panel"><p class="muted">게시글을 불러오는 중...</p></div>
+</div>
+</section>
+</main><footer>작고 다정한 취향의 모임 · 다하우되</footer>
+<script>
+(()=> {
+const $=id=>document.getElementById(id);let sb=null,user=null,profile=null,category='전체';
+const saved=()=>({url:localStorage.getItem('dh_url')||'',key:localStorage.getItem('dh_key')||''});
+function msg(id,t,cls=''){ $(id).textContent=t;$(id).className='muted '+cls; }
+function show(id,on){$(id).classList.toggle('hidden',!on)}
+function client(){const c=saved();if(!c.url||!c.key)return false;sb=window.supabase.createClient(c.url,c.key);return true}
+$('url').value=saved().url;$('key').value=saved().key;
+$('connect').onclick=async()=>{let u=$('url').value.trim(),k=$('key').value.trim();if(!u||!k){msg('setupMsg','URL과 Publishable key를 모두 입력해 줘.','bad');return}try{new URL(u);localStorage.setItem('dh_url',u);localStorage.setItem('dh_key',k);client();let {error}=await sb.auth.getSession();if(error)throw error;msg('setupMsg','연결 준비 완료!','good');show('auth',true)}catch(e){msg('setupMsg','주소 형식을 확인해 줘: '+e.message,'bad')}};
+$('forget').onclick=()=>{localStorage.removeItem('dh_url');localStorage.removeItem('dh_key');$('url').value='';$('key').value='';sb=null;show('auth',false);show('app',false);msg('setupMsg','저장된 연결을 지웠어.')};
+document.querySelectorAll('[data-auth]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-auth]').forEach(x=>{x.classList.toggle('active',x===b);x.classList.toggle('secondary',x!==b)});show('loginForm',b.dataset.auth==='login');show('signupForm',b.dataset.auth==='signup');msg('authMsg','')});
+$('signupBtn').onclick=async()=>{let email=$('signEmail').value.trim(),password=$('signPass').value,name=$('signName').value.trim();if(!name||!email||password.length<6){msg('authMsg','닉네임, 이메일, 6자 이상의 비밀번호를 확인해 줘.','bad');return}let {error}=await sb.auth.signUp({email,password,options:{data:{nickname:name}}});msg('authMsg',error?error.message:'가입 신청 완료! 이메일 인증이 필요할 수 있어. 관리자 승인도 기다려 줘.',error?'bad':'good')};
+$('loginBtn').onclick=async()=>{let {error}=await sb.auth.signInWithPassword({email:$('loginEmail').value.trim(),password:$('loginPass').value});if(error)msg('authMsg',error.message,'bad');else await boot()};
+async function boot(){let {data:{session}}=await sb.auth.getSession();user=session?.user||null;if(!user){show('auth',true);show('app',false);show('pending',false);return}let {data,error}=await sb.from('profiles').select('*').eq('id',user.id).maybeSingle();if(error){msg('authMsg','프로필을 불러오지 못했어. 데이터베이스 테이블과 정책을 확인해 줘: '+error.message,'bad');return}profile=data;if(!profile||profile.status!=='approved'){show('pending',true);show('app',false);show('auth',false);return}show('pending',false);show('auth',false);show('app',true);$('welcome').textContent=(profile.nickname||user.email)+' 님, 반가워!';show('adminArea',profile.role==='admin');if(profile.role==='admin')loadRequests();loadPosts()}
+async function loadRequests(){let {data,error}=await sb.from('profiles').select('id,nickname,email,created_at').eq('status','pending').order('created_at');$('requests').innerHTML='';if(error){$('requests').textContent=error.message;return}if(!data.length){$('requests').textContent='대기 중인 신청이 없어.';return}data.forEach(p=>{let d=document.createElement('div');d.className='row';d.style.margin='8px 0';let t=document.createElement('span');t.textContent=(p.nickname||'닉네임 없음')+' · '+(p.email||'');let a=document.createElement('button');a.textContent='승인';a.onclick=()=>review(p.id,'approved');let r=document.createElement('button');r.textContent='거절';r.className='danger';r.onclick=()=>review(p.id,'rejected');d.append(t,a,r);$('requests').append(d)})}
+async function review(id,status){let {error}=await sb.from('profiles').update({status}).eq('id',id);if(error)alert(error.message);else loadRequests()}
+async function loadPosts(){let q=sb.from('posts').select('id,user_id,category,title,content,created_at').order('created_at',{ascending:false});if(category!=='전체')q=q.eq('category',category);let {data,error}=await q;$('posts').innerHTML='';if(error){$('posts').textContent='게시글을 불러오지 못했어: '+error.message;return}if(!data.length){$('posts').textContent='아직 게시글이 없어. 첫 글을 남겨봐!';return}for(let p of data){let wrap=document.createElement('article');wrap.className='post';let h=document.createElement('h3');h.textContent=p.title;let m=document.createElement('div');m.className='meta';m.textContent=p.category+' · '+new Date(p.created_at).toLocaleString('ko-KR');let c=document.createElement('div');c.className='content';c.textContent=p.content;wrap.append(h,m,c);let comments=document.createElement('div');comments.className='muted';comments.style.marginTop='12px';let {data:cs}=await sb.from('comments').select('id,user_id,content,created_at').eq('post_id',p.id).order('created_at');(cs||[]).forEach(x=>{let line=document.createElement('p');line.textContent='↳ '+x.content;comments.append(line)});let input=document.createElement('input');input.placeholder='댓글 쓰기';let b=document.createElement('button');b.textContent='댓글 등록';b.onclick=async()=>{if(!input.value.trim())return;let {error}=await sb.from('comments').insert({post_id:p.id,user_id:user.id,content:input.value.trim()});if(error)alert(error.message);else loadPosts()};wrap.append(comments,input,b);if(p.user_id===user.id||profile.role==='admin'){let del=document.createElement('button');del.textContent='글 삭제';del.className='danger';del.onclick=async()=>{if(confirm('이 글을 삭제할까?')){let {error}=await sb.from('posts').delete().eq('id',p.id);if(error)alert(error.message);else loadPosts()}};wrap.append(del)}$('posts').append(wrap)}}
+$('postBtn').onclick=async()=>{let title=$('postTitle').value.trim(),content=$('postBody').value.trim();if(!title||!content){msg('postMsg','제목과 내용을 입력해 줘.','bad');return}let {error}=await sb.from('posts').insert({user_id:user.id,category:$('postCat').value,title,content});if(error)msg('postMsg','등록 실패: '+error.message,'bad');else{$('postTitle').value='';$('postBody').value='';msg('postMsg','등록했어!','good');loadPosts()}};
+document.querySelectorAll('#categories button').forEach(b=>b.onclick=()=>{category=b.dataset.cat;document.querySelectorAll('#categories button').forEach(x=>{x.classList.toggle('active',x===b);x.classList.toggle('secondary',x!==b)});loadPosts()});
+async function logout(){await sb.auth.signOut();user=null;show('app',false);show('pending',false);show('auth',true)}
+$('logout').onclick=logout;$('logoutPending').onclick=logout;
+if(client()){show('auth',true);sb.auth.onAuthStateChange(()=>setTimeout(boot,0));boot()}
+})();
+</script>
+</body></html>
